@@ -15,6 +15,7 @@ import (
 	"encoding/base64"
 	"io"
 	"net"
+	"net/smtp"
 	"net/textproto"
 	"strings"
 )
@@ -156,9 +157,9 @@ func (c *Client) Verify(addr string) error {
 // Auth authenticates a client using the provided authentication mechanism.
 // A failed authentication closes the connection.
 // Only servers that advertise the AUTH extension support this function.
-func (c *Client) Auth(a Auth) error {
+func (c *Client) Auth(a smtp.Auth) error {
 	encoding := base64.StdEncoding
-	mech, resp, err := a.Start(&ServerInfo{c.serverName, c.tls, c.auth})
+	mech, resp, err := a.Start(&smtp.ServerInfo{c.serverName, c.tls, c.auth})
 	if err != nil {
 		c.Quit()
 		return err
@@ -243,7 +244,7 @@ func (c *Client) Data() (io.WriteCloser, error) {
 // SendMail connects to the server at addr, switches to TLS if possible,
 // authenticates with mechanism a if possible, and then sends an email from
 // address from, to addresses to, with message msg.
-func SendMail(addr string, a Auth, from string, to []string, msg []byte) error {
+func SendMail(addr string, a smtp.Auth, from string, to []string, msg []byte) error {
 	c, err := Dial(addr)
 	if err != nil {
 		return err
